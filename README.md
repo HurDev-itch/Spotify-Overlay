@@ -11,293 +11,113 @@ SpotifyOverlay uses a split architecture:
 
 The goal is to provide a lightweight, responsive, and fullscreen-compatible Spotify experience while gaming.
 
----
+## Features
 
-# Features
+### Current Features (Version 1.1)
 
-## Current Features
+* **Playback Controls:** Play / Pause, Next Track, Previous Track, Volume Control
+* **Now Playing:** Track Name, Artist Name, Album Artwork, Playback Progress
+* **Library Access:** Search for Tracks/Artists/Albums, and browse your Playlists!
+* **Xbox Game Bar Integration:** Native widget, works over any game supported by Game Bar, zero anti-cheat risks.
+* **Backend Services:** Spotify OAuth Authentication, automatic token refresh, local artwork caching, and real-time WebSocket communication.
 
-### Playback Controls
+### Planned Features
 
-* Play / Pause
-* Next Track
-* Previous Track
-* Volume Control
-
-### Now Playing
-
-* Track Name
-* Artist Name
-* Album Artwork
-* Playback Progress
-
-### Xbox Game Bar Integration
-
-* Native Xbox Game Bar Widget
-* Works over games supported by Game Bar
-* No DLL Injection
-* No DirectX Hooking
-* No Anti-Cheat Risks
-
-### Backend Services
-
-* Spotify OAuth Authentication
-* Automatic Token Refresh
-* Local Artwork Cache
-* WebSocket Communication
-
----
-
-# Planned Features
-
-## Version 1.1
-
-* Search Tracks
-* Search Artists
-* Search Albums
-* Playlist Browser
-* Queue Viewer
-* Improved Playback Synchronization
-
-## Version 1.2
-
+**Version 1.2**
 * Lyrics Support (Soon)
 * Compact / Expanded Modes (Soon)
 * Theme Customization (Soon)
 * Improved Notifications (Soon)
 
-## Future Versions
-
+**Future Versions (2.0+)**
 * Device Switching
 * Friends Activity
 * Plugin System
 * Multiple Overlay Layouts
 * Advanced Media Controls
 
----
-
-# Architecture
+## Architecture
 
 ```text
 ┌─────────────────────────────┐
 │ Xbox Game Bar Widget        │
 │ SpotifyOverlay.GameBar      │
 └─────────────┬───────────────┘
-              │
-         WebSocket
-              │
+              │ WebSocket
 ┌─────────────▼───────────────┐
 │ SpotifyOverlay.App          │
-│ .NET 8 Backend             │
+│ .NET 8 Backend              │
 └─────────────┬───────────────┘
-              │
+              │ HTTPS
               ▼
-      Spotify Web API
+       Spotify Web API
 ```
 
----
+## Requirements
 
-# Project Structure
-
-```text
-SpotifyOverlay/
-│
-├── src/
-│   ├── SpotifyOverlay.App/
-│   ├── SpotifyOverlay.Core/
-│   ├── SpotifyOverlay.IPC/
-│   └── SpotifyOverlay.GameBar/
-│
-├── docs/
-│
-└── README.md
-```
-
----
-
-# Requirements
-
-## Runtime
-
-* Windows 10 19041+
-* Windows 11
+**Runtime**
+* Windows 10 (19041+) or Windows 11
 * Xbox Game Bar Installed
 * Spotify Premium Account
 
-## Development
-
-* Visual Studio 2022
+**Development**
+* Visual Studio 2022 or newer
 * .NET 8 SDK
 * UWP Development Workload
 * Xbox Game Bar SDK
 
----
+## Installation
 
-# Installation
-
-## Clone Repository
-
+### 1. Clone Repository
 ```bash
-git clone https://github.com/yourname/SpotifyOverlay.git
+git clone https://github.com/HurDev-itch/Spotify-Overlay.git
 ```
 
----
+### 2. Configure Spotify API
+You will need to create a Spotify Application in the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/).
+Configure the following inside the backend configuration:
+* Client ID
+* Client Secret
+* Redirect URI
 
-## Open Solution
+### 3. Build & Run
+Open `SpotifyOverlay.slnx` using Visual Studio. Build the following projects in `Release x64`:
+* `SpotifyOverlay.App`
+* `SpotifyOverlay.GameBar`
 
-Open:
+## Spotify Permissions
 
-```text
-SpotifyOverlay.slnx
-```
+SpotifyOverlay requires the following scopes to function properly:
+* `user-read-playback-state`
+* `user-modify-playback-state`
+* `user-read-currently-playing`
+* `playlist-read-private`
+* `playlist-read-collaborative`
+* `user-library-read`
 
-using Visual Studio 2026.
+## Security & Performance
 
----
+**Security:** SpotifyOverlay never stores your raw Spotify credentials. Authentication uses the OAuth 2.0 Authorization Code Flow. Only secure refresh tokens are stored locally. The Game Bar Widget never communicates directly with Spotify; all communication is safely handled by the backend server.
 
-## Configure Spotify API
+**Performance Goals:** 
+* CPU: < 1%
+* RAM: < 150 MB
+* GPU: Minimal
 
-Create a Spotify Application in the Spotify Developer Dashboard.
+The backend caches album artwork, playlist metadata, and search results to reduce Spotify API requests and keep the UI lightning-fast.
 
-Configure:
+## Contributing
 
-```text
-Client ID
-Client Secret
-Redirect URI
-```
-
-inside the backend configuration.
-
----
-
-## Build
-
-Build:
-
-```text
-SpotifyOverlay.App
-SpotifyOverlay.GameBar
-```
-
-using Release x64.
-
----
-
-# Spotify Permissions
-
-SpotifyOverlay requires the following scopes:
-
-```text
-user-read-playback-state
-user-modify-playback-state
-user-read-currently-playing
-
-playlist-read-private
-playlist-read-collaborative
-
-user-library-read
-```
-
-These permissions are required for:
-
-* Playback Control
-* Queue Management
-* Playlist Access
-* Search Features
-
----
-
-# Security
-
-SpotifyOverlay never stores Spotify credentials.
-
-Authentication uses:
-
-* OAuth 2.0 Authorization Code Flow
-* Refresh Tokens
-* Local Secure Storage
-
-The Game Bar Widget never communicates directly with Spotify.
-
-All Spotify communication is handled by the backend.
-
----
-
-# Performance Goals
-
-Target resource usage:
-
-```text
-CPU: < 1%
-RAM: < 150 MB
-GPU: Minimal
-```
-
-The backend caches:
-
-* Album Artwork
-* Playlist Metadata
-* Search Results
-
-to reduce Spotify API requests.
-
----
-
-# Roadmap
-
-## Stabilization
-
-* Fix Search
-* Fix Playlists
-* Fix Queue
-* Fix Playback Synchronization
-
-## Version 1.1
-
-* Search
-* Playlists
-* Queue
-
-## Version 1.2
-
-* Lyrics (Soon)
-* Themes (Soon)
-* Notifications (Soon)
-
-## Version 2.0
-
-* Plugin System
-* Multiple Widgets
-* Device Management
-
----
-
-# Contributing
-
-Pull requests are welcome.
-
-Before submitting a PR:
-
-* Follow existing code style
-* Test on Windows 10 and Windows 11
+Pull requests are welcome! Before submitting a PR:
+* Follow the existing code style
+* Test your changes on both Windows 10 and Windows 11
 * Verify Game Bar compatibility
-* Document major changes
+* Document any major changes
+
+## License
+
+This project is licensed under the **MIT License**. See the `LICENSE` file for details.
 
 ---
 
-# License
-
-This project is currently under development.
-
-License will be defined before the first stable public release.
-
----
-
-# Disclaimer
-
-SpotifyOverlay is an independent project and is not affiliated with, endorsed by, or sponsored by Spotify AB or Microsoft Corporation.
-
-Spotify is a trademark of Spotify AB.
-
-Xbox and Xbox Game Bar are trademarks of Microsoft Corporation.
+**Disclaimer:** SpotifyOverlay is an independent project and is not affiliated with, endorsed by, or sponsored by Spotify AB or Microsoft Corporation. Spotify is a trademark of Spotify AB. Xbox and Xbox Game Bar are trademarks of Microsoft Corporation.
