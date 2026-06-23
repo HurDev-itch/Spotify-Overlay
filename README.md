@@ -61,10 +61,10 @@ The goal is to provide a lightweight, responsive, and fullscreen-compatible Spot
 
 ## Version 1.2
 
-* Lyrics Support
-* Compact / Expanded Modes
-* Theme Customization
-* Improved Notifications
+* Lyrics Support (Soon)
+* Compact / Expanded Modes (Soon)
+* Theme Customization (Soon)
+* Improved Notifications (Soon)
 
 ## Future Versions
 
@@ -261,9 +261,9 @@ to reduce Spotify API requests.
 
 ## Version 1.2
 
-* Lyrics
-* Themes
-* Notifications
+* Lyrics (Soon)
+* Themes (Soon)
+* Notifications (Soon)
 
 ## Version 2.0
 
