@@ -13,7 +13,7 @@ The goal is to provide a lightweight, responsive, and fullscreen-compatible Spot
 
 ## Features
 
-### Current Features (Version 1.1)
+### Current Features (Version 1.3)
 
 * **Playback Controls:** Play / Pause, Next Track, Previous Track, Volume Control
 * **Now Playing:** Track Name, Artist Name, Album Artwork, Playback Progress
@@ -23,7 +23,7 @@ The goal is to provide a lightweight, responsive, and fullscreen-compatible Spot
 
 ### Planned Features
 
-**Version 1.2**
+**Version 1.5**
 * Lyrics Support (Soon)
 * Compact / Expanded Modes (Soon)
 * Theme Customization (Soon)
