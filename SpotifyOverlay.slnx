@@ -1,0 +1,25 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/SpotifyOverlay.App/SpotifyOverlay.App.csproj">
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/SpotifyOverlay.Core/SpotifyOverlay.Core.csproj">
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/SpotifyOverlay.IPC/SpotifyOverlay.IPC.csproj">
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/SpotifyOverlay.OverlayWindow/SpotifyOverlay.OverlayWindow.csproj" />
+    <Project Path="src/SpotifyOverlay.Service/SpotifyOverlay.Service.csproj">
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/SpotifyOverlay.GameBar/SpotifyOverlay.GameBar.csproj" Id="94d05a38-04b0-4ea4-ad28-4adfe4719e84">
+      <Platform Solution="*|x64" Project="x64" />
+      <Deploy Solution="Release|x64" />
+    </Project>
+  </Folder>
+</Solution>

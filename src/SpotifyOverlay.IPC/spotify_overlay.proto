@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package SpotifyOverlay.IPC;
+
+// Commands sent from the Client (Overlay / Main App) to the Service
+message OverlayCommand {
+    enum CommandType {
+        UNKNOWN = 0;
+        PLAY_PAUSE = 1;
+        NEXT_TRACK = 2;
+        PREV_TRACK = 3;
+        SET_VOLUME = 4;
+        TOGGLE_SHUFFLE = 5;
+        REQUEST_FULL_STATE = 6;
+    }
+    CommandType type = 1;
+    int32 volume_level = 2; // Only used if SET_VOLUME
+}
+
+// State updates sent from the Service to the Clients
+message SpotifyState {
+    string track_id = 1;
+    string track_name = 2;
+    string artist_name = 3;
+    string album_name = 4;
+    int32 duration_ms = 5;
+    int32 progress_ms = 6;
+    bool is_playing = 7;
+    int32 volume = 8;
+    bool is_shuffle = 9;
+    string artwork_path = 10; // Local path to cached artwork
+}
+
+// Generic Event message for the Event-Driven architecture
+message ServiceEvent {
+    enum EventType {
+        UNKNOWN = 0;
+        TRACK_CHANGED = 1;
+        PLAYBACK_PAUSED = 2;
+        PLAYBACK_RESUMED = 3;
+        DEVICE_CHANGED = 4;
+        VOLUME_CHANGED = 5;
+        FULL_STATE_UPDATE = 6;
+    }
+    EventType type = 1;
+    SpotifyState state = 2;
+}

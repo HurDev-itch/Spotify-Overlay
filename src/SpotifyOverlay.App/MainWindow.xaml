@@ -1,0 +1,64 @@
+<Window
+    x:Class="SpotifyOverlay.App.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SpotifyOverlay.App"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <NavigationView x:Name="NavView" PaneDisplayMode="Left" IsSettingsVisible="True" SelectionChanged="NavView_SelectionChanged" Loaded="NavView_Loaded">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Icon="Home" Content="Dashboard" Tag="Dashboard" />
+                <NavigationViewItem Icon="Library" Content="Profiles" Tag="Profiles" />
+                <NavigationViewItem Icon="Add" Content="Plugins" Tag="Plugins" />
+            </NavigationView.MenuItems>
+
+            <Grid Padding="24">
+                <!-- Dashboard Panel -->
+                <StackPanel x:Name="DashboardPanel" Spacing="16" Visibility="Visible">
+                    <TextBlock Text="Spotify Overlay Setup" Style="{ThemeResource TitleTextBlockStyle}" />
+                    
+                    <InfoBar x:Name="LoopbackInfoBar" IsOpen="False" Severity="Error" 
+                             Title="Action Required: Game Bar Connection" 
+                             Message="The Game Bar widget cannot connect to this app due to Windows security policies. Click the button below to grant permission.">
+                        <InfoBar.ActionButton>
+                            <Button Content="Grant Permission" Click="GrantLoopback_Click"/>
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+
+                    <InfoBar x:Name="SpotifyStatusInfoBar" IsOpen="True" Severity="Warning" 
+                             Title="Checking Connection..." 
+                             Message="Loading your Spotify session." />
+
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="LinkSpotifyBtn" Content="Link Spotify Account" Style="{ThemeResource AccentButtonStyle}" Click="LinkSpotify_Click" />
+                        <Button x:Name="UnlinkSpotifyBtn" Content="Unlink Account" Visibility="Collapsed" Click="UnlinkSpotify_Click" />
+                    </StackPanel>
+                    
+                    <TextBlock Text="Global Hotkeys" Style="{ThemeResource SubtitleTextBlockStyle}" Margin="0,24,0,0" />
+                    <TextBox Header="Toggle Overlay Shortcut" PlaceholderText="e.g. Ctrl+Shift+S" Width="300" HorizontalAlignment="Left" />
+                </StackPanel>
+
+                <!-- Profiles Panel -->
+                <StackPanel x:Name="ProfilesPanel" Spacing="16" Visibility="Collapsed">
+                    <TextBlock Text="Profiles" Style="{ThemeResource TitleTextBlockStyle}" />
+                    <TextBlock Text="Here you will be able to manage different overlay configurations." Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+
+                <!-- Plugins Panel -->
+                <StackPanel x:Name="PluginsPanel" Spacing="16" Visibility="Collapsed">
+                    <TextBlock Text="Plugins" Style="{ThemeResource TitleTextBlockStyle}" />
+                    <TextBlock Text="Extend Spotify Overlay with additional modules." Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+
+                <!-- Settings Panel -->
+                <StackPanel x:Name="SettingsPanel" Spacing="16" Visibility="Collapsed">
+                    <TextBlock Text="Settings" Style="{ThemeResource TitleTextBlockStyle}" />
+                    <TextBlock Text="Application settings go here." Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+            </Grid>
+        </NavigationView>
+    </Grid>
+</Window>

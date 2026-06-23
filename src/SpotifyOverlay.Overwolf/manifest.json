@@ -1,0 +1,39 @@
+{
+  "manifest_version": 1,
+  "type": "WebApp",
+  "meta": {
+    "name": "Spotify Overlay",
+    "version": "1.0.0",
+    "minimum-overwolf-version": "0.200.0",
+    "author": "Antigravity",
+    "icon": "icon.png",
+    "icon_gray": "icon_gray.png",
+    "description": "An elegant Spotify overlay for your games."
+  },
+  "permissions": [
+    "FileSystem"
+  ],
+  "data": {
+    "start_window": "overlay",
+    "windows": {
+      "overlay": {
+        "file": "index.html",
+        "transparent": true,
+        "resizable": true,
+        "show_in_taskbar": true,
+        "topmost": true,
+        "size": {
+          "width": 400,
+          "height": 120
+        },
+        "min_size": {
+          "width": 300,
+          "height": 100
+        },
+        "in_game_only": false,
+        "desktop_only": false,
+        "disable_rightclick": false
+      }
+    }
+  }
+}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Overlay</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="diagnostic-panel" style="display: none; position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.8); color: lime; padding: 10px; font-family: monospace; font-size: 12px; z-index: 9999;">
+        <strong>Overlay Diagnostics</strong><br/>
+        Loading...
+    </div>
+    
+    <div id="overlay-container">
+        <!-- Draggable region for Overwolf -->
+        <div style="position: absolute; top: 0; left: 0; right: 0; height: 100%; z-index: -1;" id="drag-region"></div>
+        
+        <div id="artwork"></div>
+        <div id="info">
+            <div id="track-name">Waiting for Spotify...</div>
+            <div id="artist-name">--</div>
+            <div id="controls">
+                <button class="btn-control" id="btn-prev">
+                    <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                </button>
+                <button class="btn-control" id="btn-play">
+                    <!-- Play icon -->
+                    <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <!-- Pause icon, hidden by default -->
+                    <svg id="icon-pause" viewBox="0 0 24 24" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </button>
+                <button class="btn-control" id="btn-next">
+                    <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                </button>
+            </div>
+        </div>
+        <div id="status">Disconnected</div>
+    </div>
+    
+    <script src="js/app.js"></script>
+</body>
+</html>
