@@ -148,10 +148,10 @@ git clone https://github.com/yourname/SpotifyOverlay.git
 Open:
 
 ```text
-SpotifyOverlay.sln
+SpotifyOverlay.slnx
 ```
 
-using Visual Studio 2022.
+using Visual Studio 2026.
 
 ---
 
