@@ -24,10 +24,10 @@ The goal is to provide a lightweight, responsive, and fullscreen-compatible Spot
 ### Planned Features
 
 **Version 1.5**
-* Lyrics Support (Soon)
-* Compact / Expanded Modes (Soon)
-* Theme Customization (Soon)
-* Improved Notifications (Soon)
+* Lyrics Support
+* Compact / Expanded Modes
+* Theme Customization
+* Improved Notifications
 
 **Future Versions (2.0+)**
 * Device Switching
