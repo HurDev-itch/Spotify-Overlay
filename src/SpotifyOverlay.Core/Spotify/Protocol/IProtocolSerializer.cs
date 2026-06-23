@@ -10,6 +10,7 @@ namespace SpotifyOverlay.Core.Spotify.Protocol
         string SerializeQueue(QueueItem queue);
         string SerializePlaybackState(PlaybackStateData state);
         string SerializeError(string code, string message);
+        string SerializePlaylistTracks(string playlistId, PlaylistTracksData data);
     }
 
     public class ProtocolSerializer : IProtocolSerializer
@@ -44,6 +45,12 @@ namespace SpotifyOverlay.Core.Spotify.Protocol
             {
                 Error = new ErrorDetails { Code = code, Message = message }
             };
+            return JsonSerializer.Serialize(response);
+        }
+
+        public string SerializePlaylistTracks(string playlistId, PlaylistTracksData data)
+        {
+            var response = new PlaylistTracksResponse { PlaylistId = playlistId, Data = data };
             return JsonSerializer.Serialize(response);
         }
     }

@@ -20,6 +20,33 @@ namespace SpotifyOverlay.Core.Spotify.Models
 
         [JsonPropertyName("uri")]
         public string Uri { get; set; }
+
+        [JsonPropertyName("item_type")]
+        public string ItemType { get; set; } = "track";
+    }
+
+    public class ArtistDto
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("image")]
+        public string Image { get; set; }
+
+        [JsonPropertyName("followers")]
+        public int Followers { get; set; }
+
+        [JsonPropertyName("genres")]
+        public List<string> Genres { get; set; } = new List<string>();
+
+        [JsonPropertyName("popularity")]
+        public int Popularity { get; set; }
+
+        [JsonPropertyName("uri")]
+        public string Uri { get; set; }
     }
 
     public class Playlist
@@ -47,6 +74,21 @@ namespace SpotifyOverlay.Core.Spotify.Models
 
         [JsonPropertyName("up_next")]
         public List<Track> UpNext { get; set; } = new List<Track>();
+    }
+
+    public class PlaylistTracksData
+    {
+        [JsonPropertyName("offset")]
+        public int Offset { get; set; }
+
+        [JsonPropertyName("limit")]
+        public int Limit { get; set; }
+
+        [JsonPropertyName("total")]
+        public int Total { get; set; }
+
+        [JsonPropertyName("items")]
+        public List<Track> Items { get; set; } = new List<Track>();
     }
 
     // Wire Protocol DTOs
@@ -89,6 +131,17 @@ namespace SpotifyOverlay.Core.Spotify.Models
         public List<Playlist> Data { get; set; } = new List<Playlist>();
     }
 
+    public class PlaylistTracksResponse : WireMessage
+    {
+        public PlaylistTracksResponse() { Type = "playlist_tracks"; }
+
+        [JsonPropertyName("playlist_id")]
+        public string PlaylistId { get; set; }
+
+        [JsonPropertyName("data")]
+        public PlaylistTracksData Data { get; set; }
+    }
+
     public class QueueResponse : WireMessage
     {
         public QueueResponse() { Type = "queue"; }
@@ -121,5 +174,22 @@ namespace SpotifyOverlay.Core.Spotify.Models
 
         [JsonPropertyName("current_track")]
         public Track CurrentTrack { get; set; }
+    }
+
+    public class ArtistDetailsResponse : WireMessage
+    {
+        public ArtistDetailsResponse() { Type = "artist_details"; }
+
+        [JsonPropertyName("data")]
+        public ArtistDetailsData Data { get; set; }
+    }
+
+    public class ArtistDetailsData
+    {
+        [JsonPropertyName("artist")]
+        public ArtistDto Artist { get; set; }
+
+        [JsonPropertyName("tracks")]
+        public List<Track> Tracks { get; set; } = new List<Track>();
     }
 }

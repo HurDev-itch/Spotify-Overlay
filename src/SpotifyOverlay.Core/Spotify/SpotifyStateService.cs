@@ -15,6 +15,8 @@ namespace SpotifyOverlay.Core.Spotify
         private readonly IProtocolSerializer _serializer;
         private Action<string> _broadcastAction;
         
+        private string _currentTrackIdForLyrics;
+        
         // Simple cache
         private List<Playlist> _cachedPlaylists;
         private DateTime _playlistsCacheTime;
@@ -40,8 +42,16 @@ namespace SpotifyOverlay.Core.Spotify
                         var playback = await _client.GetCurrentPlaybackAsync();
                         if (playback != null)
                         {
+                            SpotifyOverlay.Core.Services.NotificationService.Instance.HandlePlaybackStateChange(playback);
                             var json = _serializer.SerializePlaybackState(playback);
                             BroadcastJson(json);
+                            
+                            // Check for lyrics if track changed
+                            if (playback.CurrentTrack != null && playback.CurrentTrack.Id != _currentTrackIdForLyrics)
+                            {
+                                _currentTrackIdForLyrics = playback.CurrentTrack.Id;
+                                _ = FetchAndBroadcastLyricsAsync(playback.CurrentTrack.Name, playback.CurrentTrack.Artist);
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -56,6 +66,14 @@ namespace SpotifyOverlay.Core.Spotify
         public void SetBroadcastAction(Action<string> broadcastAction)
         {
             _broadcastAction = broadcastAction;
+        }
+
+        private async Task FetchAndBroadcastLyricsAsync(string trackName, string artistName)
+        {
+            var result = await SpotifyOverlay.Core.Services.LyricsService.Instance.GetLyricsAsync(trackName, artistName);
+            var obj = new { type = "lyrics", data = result };
+            var json = JsonSerializer.Serialize(obj);
+            BroadcastJson(json);
         }
 
         private void BroadcastJson(string json)
@@ -100,6 +118,38 @@ namespace SpotifyOverlay.Core.Spotify
                         BroadcastJson(_serializer.SerializePlaylists(_cachedPlaylists));
                         break;
 
+                    case "get_playlist_tracks":
+                        if (root.TryGetProperty("playlist_id", out var playlistIdProp))
+                        {
+                            var playlistId = playlistIdProp.GetString();
+                            int offset = 0;
+                            if (root.TryGetProperty("offset", out var offsetProp) && offsetProp.ValueKind == JsonValueKind.Number)
+                            {
+                                offset = offsetProp.GetInt32();
+                            }
+                            var data = await _client.GetPlaylistTracksAsync(playlistId, offset, 50);
+                            BroadcastJson(_serializer.SerializePlaylistTracks(playlistId, data));
+                        }
+                        break;
+
+                    case "get_artist_details":
+                        if (root.TryGetProperty("artist_id", out var artistIdProp))
+                        {
+                            var artistId = artistIdProp.GetString();
+                            var data = await SpotifyOverlay.Core.Services.ArtistService.Instance.GetArtistDetailsAsync(_client, artistId);
+                            if (data != null)
+                            {
+                                var resp = new { type = "artist_details", data = data };
+                                var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                                BroadcastJson(JsonSerializer.Serialize(resp, options));
+                            }
+                            else
+                            {
+                                SendError("ARTIST_NOT_FOUND", "Unable to load artist information.");
+                            }
+                        }
+                        break;
+
                     case "get_queue":
                         var queue = await _client.GetQueueAsync();
                         BroadcastJson(_serializer.SerializeQueue(queue));
@@ -121,9 +171,50 @@ namespace SpotifyOverlay.Core.Spotify
                         }
                         break;
 
+                    case "play_artist":
+                        if (root.TryGetProperty("artist_uri", out var artistUriProp))
+                        {
+                            var artistUri = artistUriProp.GetString();
+                            await _client.PlayContextAsync(artistUri);
+                            _ = TriggerPlayerStateUpdateAsync();
+                        }
+                        break;
+
+                    case "play_context":
+                        if (root.TryGetProperty("context_uri", out var ctxUriProp) && root.TryGetProperty("offset_uri", out var offUriProp))
+                        {
+                            var ctxUri = ctxUriProp.GetString();
+                            var offUri = offUriProp.GetString();
+                            await _client.PlayContextOffsetAsync(ctxUri, offUri);
+                            _ = TriggerPlayerStateUpdateAsync();
+                        }
+                        break;
+
                     case "pause":
                         await _client.PauseAsync();
                         _ = TriggerPlayerStateUpdateAsync();
+                        break;
+
+                    case "get_settings":
+                        var settingsJson = SpotifyOverlay.Core.Services.ThemeService.Instance.GetSettingsJson();
+                        BroadcastJson($"{{\"type\":\"settings\", \"data\":{settingsJson}}}");
+                        break;
+
+                    case "save_settings":
+                        if (root.TryGetProperty("data", out var dataProp))
+                        {
+                            var newSettings = JsonSerializer.Deserialize<SpotifyOverlay.Core.Models.Settings>(dataProp.GetRawText());
+                            if (newSettings != null)
+                            {
+                                SpotifyOverlay.Core.Services.ThemeService.Instance.CurrentSettings.OverlayMode = newSettings.OverlayMode;
+                                SpotifyOverlay.Core.Services.ThemeService.Instance.CurrentSettings.Theme = newSettings.Theme;
+                                SpotifyOverlay.Core.Services.ThemeService.Instance.CurrentSettings.NotifyTrackChange = newSettings.NotifyTrackChange;
+                                SpotifyOverlay.Core.Services.ThemeService.Instance.CurrentSettings.NotifyQueue = newSettings.NotifyQueue;
+                                SpotifyOverlay.Core.Services.ThemeService.Instance.CurrentSettings.NotifyDevice = newSettings.NotifyDevice;
+                                SpotifyOverlay.Core.Services.ThemeService.Instance.SaveSettings();
+                                BroadcastJson($"{{\"type\":\"settings\", \"data\":{SpotifyOverlay.Core.Services.ThemeService.Instance.GetSettingsJson()}}}");
+                            }
+                        }
                         break;
 
                     case "resume":
@@ -146,6 +237,7 @@ namespace SpotifyOverlay.Core.Spotify
                         {
                             var uri = addUriProp.GetString();
                             await _client.AddToQueueAsync(uri);
+                            SpotifyOverlay.Core.Services.NotificationService.Instance.ShowQueueNotification("Track added to queue");
                             
                             // Re-fetch queue and broadcast
                             _ = Task.Run(async () =>

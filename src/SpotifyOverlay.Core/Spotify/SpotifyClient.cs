@@ -92,7 +92,7 @@ namespace SpotifyOverlay.Core.Spotify
             return response;
         }
 
-        public async Task<List<Track>> SearchAsync(string query, string type = "track,artist,album", int limit = 20)
+        public async Task<List<Track>> SearchAsync(string query, string type = "track,artist,album", int limit = 10)
         {
             var items = new List<Track>();
 
@@ -100,7 +100,7 @@ namespace SpotifyOverlay.Core.Spotify
 
             Log($"[SEARCH] Query received: {query}");
             Log($"[SEARCH] Calling Spotify API...");
-            var response = await GetWithLogAsync($"search?q={Uri.EscapeDataString(query)}&type={Uri.EscapeDataString(type)}&limit={limit}");
+            var response = await GetWithLogAsync($"search?q={Uri.EscapeDataString(query)}&type={type}&limit={limit}");
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
@@ -129,7 +129,7 @@ namespace SpotifyOverlay.Core.Spotify
                         {
                             imageUrl = imgP[0].GetProperty("url").GetString();
                         }
-                        items.Add(new Track { Id = id, Name = name, Artist = "Artist", Image = imageUrl, Uri = uri });
+                        items.Add(new Track { Id = id, Name = name, Artist = "Artist", Image = imageUrl, Uri = uri, ItemType = "artist" });
                     }
                 }
 
@@ -151,7 +151,7 @@ namespace SpotifyOverlay.Core.Spotify
                         {
                             imageUrl = imgP[0].GetProperty("url").GetString();
                         }
-                        items.Add(new Track { Id = id, Name = name, Artist = artistName + " (Album)", Image = imageUrl, Uri = uri });
+                        items.Add(new Track { Id = id, Name = name, Artist = artistName + " (Album)", Image = imageUrl, Uri = uri, ItemType = "album" });
                     }
                 }
 
@@ -163,6 +163,79 @@ namespace SpotifyOverlay.Core.Spotify
             }
 
             Log($"[SEARCH] Sending results to widget");
+            return items;
+        }
+
+        public async Task<ArtistDto> GetArtistAsync(string artistId)
+        {
+            var response = await GetWithLogAsync($"artists/{artistId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                Log($"[ARTIST DEBUG] {json}");
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+
+                var id = root.TryGetProperty("id", out var idP) ? idP.GetString() : "";
+                var name = root.TryGetProperty("name", out var nameP) ? nameP.GetString() : "Unknown Artist";
+                var uri = root.TryGetProperty("uri", out var uriP) ? uriP.GetString() : "";
+                var popularity = root.TryGetProperty("popularity", out var popP) ? popP.GetInt32() : 0;
+                
+                var followers = 0;
+                if (root.TryGetProperty("followers", out var follP) && follP.TryGetProperty("total", out var follTotalP))
+                {
+                    followers = follTotalP.GetInt32();
+                }
+
+                var genres = new List<string>();
+                if (root.TryGetProperty("genres", out var genP))
+                {
+                    foreach (var genre in genP.EnumerateArray())
+                    {
+                        genres.Add(genre.GetString());
+                    }
+                }
+
+                var imageUrl = "";
+                if (root.TryGetProperty("images", out var imgP) && imgP.GetArrayLength() > 0)
+                {
+                    imageUrl = imgP[0].GetProperty("url").GetString();
+                }
+
+                return new ArtistDto
+                {
+                    Id = id,
+                    Name = name,
+                    Uri = uri,
+                    Popularity = popularity,
+                    Followers = followers,
+                    Genres = genres,
+                    Image = imageUrl
+                };
+            }
+            return null;
+        }
+
+        public async Task<List<Track>> GetArtistTopTracksAsync(string artistName)
+        {
+            var items = new List<Track>();
+            var query = Uri.EscapeDataString($"artist:\"{artistName}\"");
+            var response = await GetWithLogAsync($"search?q={query}&type=track&limit=10");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                Log($"[TOP TRACKS DEBUG] {json}");
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+
+                if (root.TryGetProperty("tracks", out var tracksProp) && tracksProp.TryGetProperty("items", out var trackItems))
+                {
+                    foreach (var item in trackItems.EnumerateArray())
+                    {
+                        items.Add(ParseTrack(item));
+                    }
+                }
+            }
             return items;
         }
 
@@ -235,6 +308,41 @@ namespace SpotifyOverlay.Core.Spotify
             return items;
         }
 
+        public async Task<PlaylistTracksData> GetPlaylistTracksAsync(string playlistId, int offset = 0, int limit = 50)
+        {
+            var data = new PlaylistTracksData { Offset = offset, Limit = limit, Items = new List<Track>() };
+            Log($"[PLAYLISTS] Requesting tracks for {playlistId} at offset {offset}");
+
+            var response = await GetWithLogAsync($"playlists/{playlistId}/items?offset={offset}&limit={limit}");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+
+                if (root.TryGetProperty("total", out var totalProp) && totalProp.ValueKind == JsonValueKind.Number)
+                {
+                    data.Total = totalProp.GetInt32();
+                }
+
+                if (root.TryGetProperty("items", out var itemsProp) && itemsProp.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var item in itemsProp.EnumerateArray())
+                    {
+                        if (item.TryGetProperty("track", out var trackProp) && trackProp.ValueKind != JsonValueKind.Null)
+                        {
+                            data.Items.Add(ParseTrack(trackProp));
+                        }
+                        else if (item.TryGetProperty("item", out var itemProp2) && itemProp2.ValueKind != JsonValueKind.Null)
+                        {
+                            data.Items.Add(ParseTrack(itemProp2));
+                        }
+                    }
+                }
+            }
+            return data;
+        }
+
         public async Task<QueueItem> GetQueueAsync()
         {
             var queue = new QueueItem();
@@ -268,6 +376,13 @@ namespace SpotifyOverlay.Core.Spotify
         public async Task<bool> PlayContextAsync(string contextUri)
         {
             var content = new StringContent($"{{\"context_uri\":\"{contextUri}\"}}", System.Text.Encoding.UTF8, "application/json");
+            var response = await PutWithLogAsync("me/player/play", content);
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> PlayContextOffsetAsync(string contextUri, string trackUri)
+        {
+            var content = new StringContent($"{{\"context_uri\":\"{contextUri}\",\"offset\":{{\"uri\":\"{trackUri}\"}}}}", System.Text.Encoding.UTF8, "application/json");
             var response = await PutWithLogAsync("me/player/play", content);
             return response.IsSuccessStatusCode;
         }
@@ -400,6 +515,10 @@ namespace SpotifyOverlay.Core.Spotify
 
             int trackCount = 0;
             if (item.TryGetProperty("tracks", out var tracksProp) && tracksProp.TryGetProperty("total", out var totalProp))
+            {
+                trackCount = totalProp.GetInt32();
+            }
+            else if (item.TryGetProperty("items", out var itemsProp) && itemsProp.TryGetProperty("total", out totalProp))
             {
                 trackCount = totalProp.GetInt32();
             }

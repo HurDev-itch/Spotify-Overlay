@@ -11,6 +11,9 @@ namespace SpotifyOverlay.GameBar.Models
         public string Artist { get; set; }
         public string ImageUrl { get; set; }
         public string Uri { get; set; }
+        public string ItemType { get; set; }
+
+        public string ItemTypeBadge => string.IsNullOrEmpty(ItemType) ? "" : ItemType.ToUpper();
 
         private BitmapImage _imageSource;
         public BitmapImage ImageSource
@@ -94,6 +97,36 @@ namespace SpotifyOverlay.GameBar.Models
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CurrentTrack)));
             }
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+    }
+
+    public class ArtistUIModel : INotifyPropertyChanged
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string ImageUrl { get; set; }
+        public int Followers { get; set; }
+        public System.Collections.Generic.List<string> Genres { get; set; } = new System.Collections.Generic.List<string>();
+        public int Popularity { get; set; }
+        public string Uri { get; set; }
+
+        private BitmapImage _imageSource;
+        public BitmapImage ImageSource
+        {
+            get
+            {
+                if (_imageSource == null && !string.IsNullOrEmpty(ImageUrl))
+                {
+                    _imageSource = new BitmapImage(new System.Uri(ImageUrl));
+                }
+                return _imageSource;
+            }
+        }
+
+        public string FollowersText => $"{Followers:N0} Followers";
+        public string GenresText => Genres.Count > 0 ? string.Join(", ", Genres) : "No genres specified";
+        public string PopularityText => $"Popularity: {Popularity}/100";
 
         public event PropertyChangedEventHandler PropertyChanged;
     }

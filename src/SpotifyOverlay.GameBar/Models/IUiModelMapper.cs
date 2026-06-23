@@ -7,6 +7,7 @@ namespace SpotifyOverlay.GameBar.Models
     {
         TrackUIModel MapTrack(JsonObject json);
         PlaylistUIModel MapPlaylist(JsonObject json);
+        ArtistUIModel MapArtist(JsonObject json);
     }
 
     public class UiModelMapper : IUiModelMapper
@@ -19,7 +20,8 @@ namespace SpotifyOverlay.GameBar.Models
                 Name = json.ContainsKey("name") && json["name"].ValueType == JsonValueType.String ? json["name"].GetString() : "Unknown Track",
                 Artist = json.ContainsKey("artist") && json["artist"].ValueType == JsonValueType.String ? json["artist"].GetString() : "Unknown Artist",
                 ImageUrl = json.ContainsKey("image") && json["image"].ValueType == JsonValueType.String ? json["image"].GetString() : "",
-                Uri = json.ContainsKey("uri") && json["uri"].ValueType == JsonValueType.String ? json["uri"].GetString() : ""
+                Uri = json.ContainsKey("uri") && json["uri"].ValueType == JsonValueType.String ? json["uri"].GetString() : "",
+                ItemType = json.ContainsKey("item_type") && json["item_type"].ValueType == JsonValueType.String ? json["item_type"].GetString() : "track"
             };
         }
 
@@ -33,6 +35,31 @@ namespace SpotifyOverlay.GameBar.Models
                 ImageUrl = json.ContainsKey("image") && json["image"].ValueType == JsonValueType.String ? json["image"].GetString() : "",
                 Uri = json.ContainsKey("uri") && json["uri"].ValueType == JsonValueType.String ? json["uri"].GetString() : ""
             };
+        }
+
+        public ArtistUIModel MapArtist(JsonObject json)
+        {
+            var model = new ArtistUIModel
+            {
+                Id = json.ContainsKey("id") && json["id"].ValueType == JsonValueType.String ? json["id"].GetString() : "",
+                Name = json.ContainsKey("name") && json["name"].ValueType == JsonValueType.String ? json["name"].GetString() : "Unknown Artist",
+                ImageUrl = json.ContainsKey("image") && json["image"].ValueType == JsonValueType.String ? json["image"].GetString() : "",
+                Uri = json.ContainsKey("uri") && json["uri"].ValueType == JsonValueType.String ? json["uri"].GetString() : "",
+                Followers = json.ContainsKey("followers") && json["followers"].ValueType == JsonValueType.Number ? (int)json["followers"].GetNumber() : 0,
+                Popularity = json.ContainsKey("popularity") && json["popularity"].ValueType == JsonValueType.Number ? (int)json["popularity"].GetNumber() : 0
+            };
+
+            if (json.ContainsKey("genres") && json["genres"].ValueType == JsonValueType.Array)
+            {
+                foreach (var g in json["genres"].GetArray())
+                {
+                    if (g.ValueType == JsonValueType.String)
+                    {
+                        model.Genres.Add(g.GetString());
+                    }
+                }
+            }
+            return model;
         }
     }
 }
